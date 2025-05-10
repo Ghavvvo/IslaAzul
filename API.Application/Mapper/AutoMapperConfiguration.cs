@@ -11,7 +11,8 @@ namespace API.Application.Mapper
             services.AddSingleton(mapper);
         }
         public static MapperConfigurationExpression AddAutoMapperLeadOportunidade(this MapperConfigurationExpression cfg)
-        {
+        {   
+            cfg.AddProfile<ClienteDtoProfile>();
             cfg.AddProfile<UsuarioDtoProfile>();
             cfg.AddProfile<RolDtoProfile>();
             cfg.AddProfile<PermisoDtoProfile>();

@@ -17,6 +17,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using API.Domain.Interfaces.IslaAzul;
+using API.Domain.Services.IslaAzul;
 
 namespace API.Application.IoC
 {
@@ -181,6 +183,7 @@ namespace API.Application.IoC
             services.AddScoped<IRolPermisoService, RolPermisoService>();
             services.AddScoped<IRolService, RolService>();
             services.AddScoped<IUsuarioService, UsuarioService>();
+            services.AddScoped<IClienteService, ClienteService>();
             services.AddScoped(typeof(IBaseService<EntidadBase, AbstractValidator<EntidadBase>>), typeof(BasicService<EntidadBase, AbstractValidator<EntidadBase>>));
 
             return services;
