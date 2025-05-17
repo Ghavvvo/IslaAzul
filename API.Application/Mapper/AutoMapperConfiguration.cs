@@ -1,4 +1,5 @@
 ﻿using API.Application.Mapper.Seguridad;
+using API.Data.Entidades.IslaAzul;
 using AutoMapper;
 
 namespace API.Application.Mapper
@@ -13,6 +14,10 @@ namespace API.Application.Mapper
         public static MapperConfigurationExpression AddAutoMapperLeadOportunidade(this MapperConfigurationExpression cfg)
         {   
             cfg.AddProfile<ClienteDtoProfile>();
+            cfg.AddProfile<HabitacionDtoProfile>();
+            cfg.AddProfile<HabitacionAmaDeLlavesDtoProfile>();
+            cfg.AddProfile<ReservaDtoProfile>();
+            cfg.AddProfile<AmaDeLlavesDtoProfile>();
             cfg.AddProfile<UsuarioDtoProfile>();
             cfg.AddProfile<RolDtoProfile>();
             cfg.AddProfile<PermisoDtoProfile>();

@@ -184,6 +184,11 @@ namespace API.Application.IoC
             services.AddScoped<IRolService, RolService>();
             services.AddScoped<IUsuarioService, UsuarioService>();
             services.AddScoped<IClienteService, ClienteService>();
+            services.AddScoped<IReservaService, ReservaService>();
+            services.AddScoped<IHabitacionService, HabitacionService>();
+            services.AddScoped<IAmaDeLlavesService, AmaDeLlavesService>();
+            
+            
             services.AddScoped(typeof(IBaseService<EntidadBase, AbstractValidator<EntidadBase>>), typeof(BasicService<EntidadBase, AbstractValidator<EntidadBase>>));
 
             return services;

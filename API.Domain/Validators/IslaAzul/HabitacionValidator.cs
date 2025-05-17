@@ -16,9 +16,9 @@ namespace API.Domain.Validators.Seguridad
         {
             _repositorios = repositorios;
 
-            RuleFor(h => h.Numero).NotEmpty().WithMessage("El número de la habitación no puede estar vacío.")
+           /* RuleFor(h => h.Numero).NotEmpty().WithMessage("El número de la habitación no puede estar vacío.")
                 .MaximumLength(10).WithMessage($"El número de la habitación debe tener como máximo 10 caracteres.")
-                .NotNull().WithMessage("El número de la habitación es obligatorio.");
+                .NotNull().WithMessage("El número de la habitación es obligatorio."); */
 
             RuleFor(h => h).MustAsync(async (habitacion, cancelacion) => 
                     !await _repositorios.Habitaciones.AnyAsync(e => e.Numero == habitacion.Numero && e.Id != habitacion.Id))

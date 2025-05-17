@@ -10,7 +10,8 @@ namespace API.Data.ConfiguracionEntidades.IslaAzul
             modelBuilder.Entity<Reserva>().ToTable("Reservas");
             EntidadBaseConfiguracionBD<Reserva>.SetEntityBuilder(modelBuilder);
 
-          
+           
+            
             modelBuilder.Entity<Reserva>().Property(e => e.FechaReservacion ).IsRequired();
             
             modelBuilder.Entity<Reserva>().Property(e => e.FechaEntrada).IsRequired();
@@ -21,9 +22,7 @@ namespace API.Data.ConfiguracionEntidades.IslaAzul
             
             modelBuilder.Entity<Reserva>().Property(e => e.ClienteId).IsRequired();
             
-            
             modelBuilder.Entity<Reserva>().Property(e => e.HabitacionId).IsRequired();
-            
             
             modelBuilder.Entity<Reserva>().Property(e => e.EstaElClienteEnHostal).IsRequired();
             

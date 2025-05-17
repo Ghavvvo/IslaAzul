@@ -20,6 +20,9 @@ namespace API.Application.Controllers.IslaAzul
     {
         public ClienteController(IMapper mapper, IClienteService servicioCliente, IHttpContextAccessor httpContext) :
             base(mapper, servicioCliente, httpContext)
+        {
+            
+        }
         
 
         protected override Task<(IEnumerable<Cliente>, int)> AplicarFiltrosIncluirPropiedades(
@@ -33,7 +36,27 @@ namespace API.Application.Controllers.IslaAzul
                                        cliente.Apellidos.Contains(inputDto.TextoBuscar) ||
                                        cliente.Ci.Contains(inputDto.TextoBuscar) ||
                                        cliente.Telefono.Contains(inputDto.TextoBuscar));
+
+
             }
+
+            if (!string.IsNullOrEmpty(inputDto.Nombre))
+            {
+                filtros.Add(cliente => cliente.Nombre.Contains(inputDto.Nombre));
+            }
+            if (!string.IsNullOrEmpty(inputDto.Apellidos))
+            {
+              filtros.Add(cliente => cliente.Apellidos.Contains(inputDto.Apellidos));
+            }
+            if (!string.IsNullOrEmpty(inputDto.Ci))
+            {
+                filtros.Add(cliente => cliente.Ci.Contains(inputDto.Ci));
+            }
+            if (!string.IsNullOrEmpty(inputDto.Telefono))
+            {
+                filtros.Add(cliente => cliente.Telefono.Contains(inputDto.Telefono));
+            }
+            
 
             //IIncludableQueryable<Usuario, object> propiedadesIncluidas(IQueryable<Usuario> query) => query.Include(e => e.ShipmentItems);
 
