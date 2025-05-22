@@ -29,6 +29,16 @@ namespace API.Domain.Services.Seguridad
                 throw new CustomException
                     { Status = StatusCodes.Status400BadRequest, Message = "La reserva seleccionada no existe" };
             
+            
+            if (reservaExistente.EstaElClienteEnHostal)
+            {
+                throw new CustomException {
+                    Status = StatusCodes.Status400BadRequest,
+                    Message = "No se puede actualizar la reserva porque el cliente está en el hostal."
+                };
+            }
+
+            
             if (DateTime.Now > reservaExistente.FechaEntrada)
             {
                 throw new CustomException
@@ -39,14 +49,9 @@ namespace API.Domain.Services.Seguridad
                 };
             }
 
-            if (reservaExistente.EstaElClienteEnHostal)
-             {
-                 throw new CustomException {
-                     Status = StatusCodes.Status400BadRequest,
-                     Message = "No se puede actualizar la reserva porque el cliente está en el hostal."
-                 };
-             }
+            await ValidarDisponibilidad(reserva);
 
+         
           
             
             //llamando al validador correspondiente
@@ -57,28 +62,17 @@ namespace API.Domain.Services.Seguridad
 
         }
 
+        
 
-        public override async Task ValidarAntesCrear(Reserva reserva)
+        public  async Task ValidarDisponibilidad(Reserva reserva)
         {
-            bool EstaDuplicada = await _repositorios.Reservas.AnyAsync(e =>
-                e.Id != reserva.Id && e.ClienteId == reserva.ClienteId && e.HabitacionId == reserva.HabitacionId &&
-                e.FechaEntrada == reserva.FechaEntrada && e.FechaSalida == reserva.FechaSalida);
-
-            if (EstaDuplicada)
-            {
-                throw new CustomException
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Message = "Ya existe una reserva para esta habitación y cliente en el rango de fechas especificado."
-                };
-            }
-
-            bool EstaOcupada = await _repositorios.Reservas.AnyAsync(e =>
-                e.HabitacionId == reserva.HabitacionId && e.FechaEntrada < reserva.FechaEntrada &&
-                reserva.FechaEntrada < e.FechaSalida ||
-                e.FechaEntrada < reserva.FechaSalida && reserva.FechaSalida < e.FechaEntrada);
-
-            if (EstaOcupada)
+            bool estaOcupada = await _repositorios.Reservas.AnyAsync(e =>
+                                   e.HabitacionId == reserva.HabitacionId && 
+                                   !((reserva.FechaEntrada < e.FechaEntrada && reserva.FechaSalida <= e.FechaSalida) ||
+                                     (reserva.FechaEntrada <= e.FechaSalida && reserva.FechaEntrada > e.FechaSalida)))
+                               && !reserva.EstaCancelada && (DateTime.Now.Day <= reserva.FechaEntrada.Day || reserva.EstaElClienteEnHostal) ;
+                
+            if (estaOcupada)
             {
                 throw new CustomException
                 {
@@ -87,6 +81,12 @@ namespace API.Domain.Services.Seguridad
                 };
             }
 
+        }
+
+
+        public override async Task ValidarAntesCrear(Reserva reserva)
+        {
+           
             bool cliente = await _repositorios.Clientes.AnyAsync(e =>
                 e.Id == reserva.ClienteId);
 
@@ -118,7 +118,8 @@ namespace API.Domain.Services.Seguridad
                     Message = "La habitacion selecionada esta fuera de servicio ."
                 };
             }
-
+            
+            await ValidarDisponibilidad(reserva);
 
             //llamando al validador correspondiente
             Type? objectType = Type.GetType(typeof(ReservaValidator).AssemblyQualifiedName ?? string.Empty);
@@ -126,10 +127,10 @@ namespace API.Domain.Services.Seguridad
                 .ValidateAndThrowAsync(reserva);
         }
 
-        public async Task<EntityEntry<Reserva>> ActualizarRegistrarLlegadaReserva(Reserva reserva)
+        public async Task<EntityEntry<Reserva>> RegistrarLlegadaReserva(Guid reservaId)
         {
             
-            var reservaExistente = await ObtenerPorId(reserva.Id);
+            var reservaExistente = await ObtenerPorId(reservaId);
 
             if (reservaExistente == null)
                 throw new CustomException
@@ -139,13 +140,26 @@ namespace API.Domain.Services.Seguridad
             {
                 throw new CustomException {Status = StatusCodes.Status400BadRequest , Message = "El cliente ya se encuentra en el hostal"};
             }
-            
-            if(!reserva.EstaElClienteEnHostal && reservaExistente.EstaElClienteEnHostal)
+
+            if (reservaExistente.EstaCancelada)
             {
-                throw new CustomException {Status = StatusCodes.Status400BadRequest , Message = "Operacion no permitida.El cliente ya esta registro su llegada al hostal"};
+                throw new CustomException
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Message = "No se puede registrar la llegada del cliente porque la reserva ya esta cancelada"
+                };
+            }
+
+            if (DateTime.Now.Day != reservaExistente.FechaEntrada.Day)
+            {
+                throw new CustomException
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Message = "No se puede registrar la llegada de un cliente un dia diferente al de su entrada"
+                };
             }
             
-            reservaExistente.EstaElClienteEnHostal = reserva.EstaElClienteEnHostal;
+            reservaExistente.EstaElClienteEnHostal = true;
             
             
             return _repositorios.BasicRepository.Update(EstablecerDatosAuditoria(reservaExistente, esEntidadNueva: false));
@@ -160,7 +174,14 @@ namespace API.Domain.Services.Seguridad
                 throw new CustomException
                     { Status = StatusCodes.Status400BadRequest, Message = "La reserva seleccionada no existe" };
             
-            await ValidarAntesActualizar(reservaExistente);
+            
+            if (reservaExistente.EstaElClienteEnHostal)
+            {
+                throw new CustomException {
+                    Status = StatusCodes.Status400BadRequest,
+                    Message = "No se puede actualizar la reserva porque el cliente está en el hostal."
+                };
+            }
             
             reservaExistente.FechaCancelacion = DateTime.Now;
             reservaExistente.MotivoCancelacion = entity.MotivoCancelacion;
@@ -186,6 +207,26 @@ namespace API.Domain.Services.Seguridad
             reservaExistente.HabitacionId = entity.HabitacionId;
             
             return _repositorios.BasicRepository.Update(EstablecerDatosAuditoria(entity, esEntidadNueva: false));
+        }
+
+        public override async Task<EntityEntry<Reserva>> Crear(Reserva reserva)
+        {   
+            await ValidarAntesCrear(reserva);
+            
+            var cantidadDeDias =(decimal) reserva.FechaSalida.Day - reserva.FechaEntrada.Day + 1;
+            decimal importe = cantidadDeDias * 10;
+
+            var cliente = await _repositorios.Clientes.FirstAsync(c => c.Id == reserva.ClienteId);
+            
+            if (cliente.EsVip)
+            {
+                importe -= importe * (decimal)0.10;
+            }
+
+            reserva.ImporteDeRenta = importe;
+            
+           
+            return await _repositorios.BasicRepository.AddAsync(EstablecerDatosAuditoria(reserva));
         }
     }
 }

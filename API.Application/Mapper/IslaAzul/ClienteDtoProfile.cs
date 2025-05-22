@@ -9,11 +9,23 @@ namespace API.Application.Mapper.Seguridad
         public ClienteDtoProfile()
         {
             MapDetallesClienteDto();
+            MapListadoPaginadoClienteHabitacionDto();
         }
 
         public void MapDetallesClienteDto()
         {
             CreateMap<Cliente, DetallesClienteDto>().ReverseMap();
+        }
+
+        public void MapListadoPaginadoClienteHabitacionDto()
+        {
+            CreateMap<Cliente, ListadoPaginadoClienteHabitacionDto>().ForMember(dest => dest.Habitaciones, opt => opt.MapFrom(
+                src => src.Reservas
+                    .Select(r => r.Habitacion
+                    )
+                .Distinct()
+                    .ToList()
+            )).ReverseMap();
         }
        
     }

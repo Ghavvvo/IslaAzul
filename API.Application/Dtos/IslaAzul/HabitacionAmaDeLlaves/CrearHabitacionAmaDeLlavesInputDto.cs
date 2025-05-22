@@ -4,12 +4,15 @@ using API.Data.Entidades.IslaAzul;
 namespace API.Application.Dtos.Seguridad.Usuario
 {
     public class CrearHabitacionAmaDeLlavesInputDto : HabitacionAmaDeLlavesDto
-    {
+    {   
         [JsonIgnore]
-        public new Guid Id { get; set; }
+        new public Guid Id { get; set; }
+        
+        [JsonIgnore]
+        public new AmaDeLlaves AmaDeLlaves { get; set; } = null!;
 
         [JsonIgnore]
-        public new List<Reserva> Reservas { get; set; } = new();
+        public new Habitacion Habitacion { get; set; } = null!;
     }
 }
 

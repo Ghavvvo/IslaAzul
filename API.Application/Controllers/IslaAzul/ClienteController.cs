@@ -12,6 +12,7 @@ using System.Linq.Expressions;
 using API.Application.Dtos.Seguridad.Usuario;
 using API.Data.Entidades.IslaAzul;
 using API.Domain.Interfaces.IslaAzul;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace API.Application.Controllers.IslaAzul
 {
@@ -24,7 +25,7 @@ namespace API.Application.Controllers.IslaAzul
             
         }
         
-
+        [HttpGet("[action]")]
         protected override Task<(IEnumerable<Cliente>, int)> AplicarFiltrosIncluirPropiedades(
             FiltrarConfigurarListadoPaginadoClienteIntputDto inputDto)
         {
@@ -63,5 +64,44 @@ namespace API.Application.Controllers.IslaAzul
             return _servicioBase.ObtenerListadoPaginado(inputDto.CantidadIgnorar, inputDto.CantidadMostrar,
                 inputDto.SecuenciaOrdenamiento, null, filtros.ToArray());
         }
+        
+        [HttpGet("[action]")]
+        public virtual async Task<IActionResult> ObtenerListadoPaginadoClienteHabitacion([FromQuery] FiltrarConfigurarListadoPaginadoClienteHabitacionDto filtrarDto)
+        {
+            _servicioBase.ValidarPermisos("listar, gestionar");
+
+            (IEnumerable<Cliente> listado, int cantidad) = await AplicarFiltrosIncluirPropiedadesClienteHabitacion(filtrarDto);
+
+            ListadoPaginadoDto<ListadoPaginadoClienteHabitacionDto> listadoPaginadoDto = new()
+            {
+                Elementos = _mapper.Map<List<ListadoPaginadoClienteHabitacionDto>>(listado),
+                Cantidad = cantidad
+            };
+
+            return Ok(new ResponseDto { Status = StatusCodes.Status200OK, Result = listadoPaginadoDto });
+        }
+        
+        protected Task<(IEnumerable<Cliente>, int)> AplicarFiltrosIncluirPropiedadesClienteHabitacion(FiltrarConfigurarListadoPaginadoClienteHabitacionDto inputDto)
+        {
+            //agregando filtros
+            List<Expression<Func<Cliente, bool>>> filtros = new();
+            if (inputDto.Fecha.HasValue)
+            {
+                filtros.Add(cliente => cliente.Reservas.Any(r => 
+                    r.FechaEntrada <= inputDto.Fecha.Value && 
+                    r.FechaSalida >= inputDto.Fecha.Value &&
+                    !r.EstaCancelada)); 
+            }
+
+           
+
+            IIncludableQueryable<Cliente, object> propiedadesIncluidas(IQueryable<Cliente> query) => query.Include(c => c.Reservas ).ThenInclude(r => r.Habitacion);
+
+            return _servicioBase.ObtenerListadoPaginado(inputDto.CantidadIgnorar, inputDto.CantidadMostrar,
+                inputDto.SecuenciaOrdenamiento, propiedadesIncluidas, filtros.ToArray());
+        }
+
+
+        
     }
 }

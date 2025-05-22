@@ -6,10 +6,6 @@ namespace API.Application.Dtos.Seguridad.Usuario
 {
     public class EstFueraDeServicioHabitacionInputDto : EntidadBaseDto
     {   
-        
-            
         public bool EstaFueraDeServicio { get; set; }
-
-    
     }
 }

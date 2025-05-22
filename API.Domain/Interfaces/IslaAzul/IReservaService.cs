@@ -8,8 +8,10 @@ namespace API.Domain.Interfaces.Seguridad
 {
     public interface IReservaService : IBaseService<Reserva, ReservaValidator>
     {
-        Task<EntityEntry<Reserva>> ActualizarRegistrarLlegadaReserva(Reserva reserva);
+        Task<EntityEntry<Reserva>> RegistrarLlegadaReserva(Guid reservaId);
 
         Task<EntityEntry<Reserva>> CancelarReserva(Reserva entity);
+        
+        
     }
 }

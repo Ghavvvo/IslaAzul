@@ -187,6 +187,7 @@ namespace API.Application.IoC
             services.AddScoped<IReservaService, ReservaService>();
             services.AddScoped<IHabitacionService, HabitacionService>();
             services.AddScoped<IAmaDeLlavesService, AmaDeLlavesService>();
+            services.AddScoped<IHabitacionAmaDeLlavesService, HabitacionAmaDeLlavesService>();
             
             
             services.AddScoped(typeof(IBaseService<EntidadBase, AbstractValidator<EntidadBase>>), typeof(BasicService<EntidadBase, AbstractValidator<EntidadBase>>));

@@ -29,15 +29,12 @@ namespace API.Application.Controllers.IslaAzul
         }
         
         [HttpPut("[action]/{id}")]
-        public  async Task<IActionResult> ActualizarHabitacionFueraDeServicio(Guid id, EstFueraDeServicioHabitacionInputDto actualizarDto)
+        public  async Task<IActionResult> PonerHabitacionFueraDeServicio(Guid id)
         {
-            if (id != actualizarDto.Id)
-                return BadRequest(new ResponseDto { Status = StatusCodes.Status400BadRequest, ErrorMessage = "Error al actualizar" });
+          
             _servicioBase.ValidarPermisos("gestionar");
-
-            Habitacion habitacion = _mapper.Map<Habitacion>(actualizarDto);
             
-            EntityEntry<Habitacion> result = await ((IHabitacionService)_servicioBase).ActualizarHabitacionFuerdaDeServicio(habitacion);;
+            EntityEntry<Habitacion> result = await ((IHabitacionService)_servicioBase).ActualizarHabitacionFuerdaDeServicio(id);;
             
             await _servicioBase.GuardarTraza(usuario, $"Actualizado elemento con id = {result.Entity.Id} en la tabla {typeof(Habitacion).Name}s", typeof(Habitacion).Name);
             await _servicioBase.SalvarCambios();

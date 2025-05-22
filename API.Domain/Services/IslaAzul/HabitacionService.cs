@@ -18,17 +18,21 @@ namespace API.Domain.Services.IslaAzul
         {
         }
         
-        public async Task<EntityEntry<Habitacion>> ActualizarHabitacionFuerdaDeServicio(Habitacion habitacion)
+        public async Task<EntityEntry<Habitacion>> ActualizarHabitacionFuerdaDeServicio(Guid habitacionId)
         {
             
-            var habitacionExistente = await ObtenerPorId(habitacion.Id);
+            var habitacionExistente = await ObtenerPorId(habitacionId);
 
             if (habitacionExistente == null)
                 throw new CustomException
                     { Status = StatusCodes.Status400BadRequest, Message = "La habitacion seleccionada no existe" };
             
+            if (habitacionExistente.EstaFueraDeServicio)
+                throw new CustomException
+                    { Status = StatusCodes.Status400BadRequest, Message = "La habitacion seleccionada ya esta fuera de servicio" };
+                
             
-            habitacionExistente.EstaFueraDeServicio = habitacion.EstaFueraDeServicio;
+            habitacionExistente.EstaFueraDeServicio = true ;
             
             
             return _repositorios.BasicRepository.Update(EstablecerDatosAuditoria(habitacionExistente, esEntidadNueva: false));
