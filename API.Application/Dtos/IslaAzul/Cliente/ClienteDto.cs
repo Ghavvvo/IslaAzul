@@ -10,7 +10,6 @@ namespace API.Application.Dtos.Seguridad.Usuario
         public string Ci { get; set; } 
         public bool EsVip { get; set; } 
         public  string Telefono { get; set; }
-        public List<Reserva> Reservas { get; set; } = new();
     }
 }
 

@@ -12,11 +12,17 @@ namespace API.Application.Mapper.Seguridad
             MapDetallesReservaDto();
             MapRegistroReservaDto();
             MapCancelarReservaDto();
+            CambiarHabitacionDeReservaDto();
         }
 
         public void MapDetallesReservaDto()
         {
             CreateMap<Reserva, DetallesReservaDto>().ReverseMap();
+        }
+        
+        public void CambiarHabitacionDeReservaDto()
+        {
+            CreateMap<Reserva, CambiarDeHabitacionInputDto>().ReverseMap();
         }
 
         public void MapRegistroReservaDto()

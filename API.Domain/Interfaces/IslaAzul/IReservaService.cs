@@ -12,6 +12,8 @@ namespace API.Domain.Interfaces.Seguridad
 
         Task<EntityEntry<Reserva>> CancelarReserva(Reserva entity);
         
+        Task<EntityEntry<Reserva>> CambiarDeHabitacion(Reserva entity);
+        
         
     }
 }

@@ -174,7 +174,7 @@ namespace API.Domain.Services
                 throw new CustomException { Status = StatusCodes.Status401Unauthorized, Message = "El usuario no tiene permisos para realizar esta acción" };
         }
 
-        private IOrderedQueryable<TEntity> OrdenarLista(IQueryable<TEntity> query, string? secuenciaOrdenamiento)
+        protected IOrderedQueryable<TEntity> OrdenarLista(IQueryable<TEntity> query, string? secuenciaOrdenamiento)
         {
             try
             {

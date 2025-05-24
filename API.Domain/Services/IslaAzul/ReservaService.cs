@@ -1,4 +1,5 @@
-﻿using API.Data.Entidades.IslaAzul;
+﻿using System.Linq.Expressions;
+using API.Data.Entidades.IslaAzul;
 using API.Data.Entidades.Seguridad;
 using API.Data.IUnitOfWorks.Interfaces;
 using API.Domain.Exceptions;
@@ -68,9 +69,8 @@ namespace API.Domain.Services.Seguridad
         {
             bool estaOcupada = await _repositorios.Reservas.AnyAsync(e =>
                                    e.HabitacionId == reserva.HabitacionId && 
-                                   !((reserva.FechaEntrada < e.FechaEntrada && reserva.FechaSalida <= e.FechaSalida) ||
-                                     (reserva.FechaEntrada <= e.FechaSalida && reserva.FechaEntrada > e.FechaSalida)))
-                               && !reserva.EstaCancelada && (DateTime.Now.Day <= reserva.FechaEntrada.Day || reserva.EstaElClienteEnHostal) ;
+                                   reserva.FechaEntrada < e.FechaSalida && reserva.FechaSalida > e.FechaEntrada
+                               && !reserva.EstaCancelada && (DateTime.Now.Date <= reserva.FechaEntrada.Date || reserva.EstaElClienteEnHostal));
                 
             if (estaOcupada)
             {
@@ -85,32 +85,10 @@ namespace API.Domain.Services.Seguridad
 
 
         public override async Task ValidarAntesCrear(Reserva reserva)
-        {
+        {         
            
-            bool cliente = await _repositorios.Clientes.AnyAsync(e =>
-                e.Id == reserva.ClienteId);
 
-            if (!cliente)
-            {
-                throw new CustomException
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Message = "El cliente selecionado no esta registrado en el sistema ."
-                };
-            }
-
-            var habitacion = await _repositorios.Habitaciones.FirstAsync(h => h.Id == reserva.HabitacionId);
-
-            if (habitacion == null)
-            {
-                throw new CustomException
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Message = "La habitacion selecionada no esta registrada en el sistema ."
-                };
-            }
-
-            if (habitacion.EstaFueraDeServicio)
+            if (await _repositorios.Habitaciones.AnyAsync(e => e.Id == reserva.HabitacionId && e.EstaFueraDeServicio))
             {
                 throw new CustomException
                 {
@@ -150,7 +128,7 @@ namespace API.Domain.Services.Seguridad
                 };
             }
 
-            if (DateTime.Now.Day != reservaExistente.FechaEntrada.Day)
+            if (DateTime.Now.Date != reservaExistente.FechaEntrada.Date)
             {
                 throw new CustomException
                 {
@@ -206,9 +184,24 @@ namespace API.Domain.Services.Seguridad
             reservaExistente.ClienteId = entity.ClienteId;
             reservaExistente.HabitacionId = entity.HabitacionId;
             
-            return _repositorios.BasicRepository.Update(EstablecerDatosAuditoria(entity, esEntidadNueva: false));
+            return _repositorios.BasicRepository.Update(EstablecerDatosAuditoria(reservaExistente, esEntidadNueva: false));
         }
+        
+        public  async Task<EntityEntry<Reserva>> CambiarDeHabitacion(Reserva entity)
+        {   
+            var reservaExistente = await ObtenerPorId(entity.Id);
+           
+            if (reservaExistente == null)
+                throw new CustomException
+                    { Status = StatusCodes.Status400BadRequest, Message = "La reserva seleccionada no existe" };
 
+            reservaExistente.HabitacionId = entity.HabitacionId;
+            
+            await ValidarAntesActualizar(reservaExistente);
+            
+            return _repositorios.BasicRepository.Update(EstablecerDatosAuditoria(reservaExistente, esEntidadNueva: false));
+        }
+        
         public override async Task<EntityEntry<Reserva>> Crear(Reserva reserva)
         {   
             await ValidarAntesCrear(reserva);
@@ -217,7 +210,13 @@ namespace API.Domain.Services.Seguridad
             decimal importe = cantidadDeDias * 10;
 
             var cliente = await _repositorios.Clientes.FirstAsync(c => c.Id == reserva.ClienteId);
-            
+            if (cliente == null)
+            {
+                throw new CustomException
+                {
+                    Status = StatusCodes.Status400BadRequest, Message = "El cliente no esta registrado en el sistema"
+                };
+            }
             if (cliente.EsVip)
             {
                 importe -= importe * (decimal)0.10;

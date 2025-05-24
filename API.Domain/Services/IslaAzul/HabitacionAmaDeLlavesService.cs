@@ -1,4 +1,5 @@
-﻿using API.Data.Entidades.IslaAzul;
+﻿using System.Linq.Expressions;
+using API.Data.Entidades.IslaAzul;
 using API.Data.Entidades.Seguridad;
 using API.Data.IUnitOfWorks.Interfaces;
 using API.Domain.Exceptions;
@@ -38,6 +39,42 @@ namespace API.Domain.Services.Seguridad
             await (Activator.CreateInstance(objectType, _repositorios) as AbstractValidator<HabitacionAmaDeLLaves>).ValidateAndThrowAsync(entity);
         }
 
+        public override async Task<(IEnumerable<HabitacionAmaDeLLaves>, int)> ObtenerListadoPaginado(int cantidadIgnorar, int? cantidadMostrar, string? secuenciaOrdenamiento, Func<IQueryable<HabitacionAmaDeLLaves>, IIncludableQueryable<HabitacionAmaDeLLaves, object>>? propiedadesIncluidas = null, params Expression<Func<HabitacionAmaDeLLaves, bool>>[] filtros)
+        {
+            if (cantidadIgnorar < 0)
+                throw new CustomException { Status = StatusCodes.Status404NotFound, Message = "La cantidad de elementos a ignorar debe ser mayor o igual a 0." };
+            if (cantidadMostrar.HasValue && cantidadMostrar.Value <= 0)
+                throw new CustomException { Status = StatusCodes.Status404NotFound, Message = "La cantidad de elementos a mostrar debe ser mayor a 0." };
+
+            IQueryable<HabitacionAmaDeLLaves> query = _repositorios.BasicRepository.GetQuery();
+
+            //Filtrando
+            query = filtros.Aggregate(query, (current, filters) => current.Where(filters));
+            //Ordenando
+            query = OrdenarLista(query, secuenciaOrdenamiento);
+            //Counting
+            int total = await query.CountAsync();
+            //Paginando
+            query = query.Skip(cantidadIgnorar).Take(cantidadMostrar.GetValueOrDefault(total));
+
+            var list = await query.Select(e => new HabitacionAmaDeLLaves
+            {
+                Id = e.Id,
+                HabitacionId = e.HabitacionId,
+                AmaDeLlavesId = e.AmaDeLlavesId,
+                Habitacion = new Habitacion()
+                {
+                    Numero = e.Habitacion.Numero
+                },
+                AmaDeLlaves = new AmaDeLlaves()
+                {
+                    Nombre = e.AmaDeLlaves.Nombre,
+                    Apellidos = e.AmaDeLlaves.Apellidos
+                }
+            }).ToListAsync();
+
+            return (list, total);
+        }
 
     }
 }

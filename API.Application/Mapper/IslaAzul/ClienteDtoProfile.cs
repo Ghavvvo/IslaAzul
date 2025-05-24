@@ -19,13 +19,20 @@ namespace API.Application.Mapper.Seguridad
 
         public void MapListadoPaginadoClienteHabitacionDto()
         {
-            CreateMap<Cliente, ListadoPaginadoClienteHabitacionDto>().ForMember(dest => dest.Habitaciones, opt => opt.MapFrom(
-                src => src.Reservas
-                    .Select(r => r.Habitacion
-                    )
-                .Distinct()
-                    .ToList()
-            )).ReverseMap();
+            CreateMap<Cliente, ListadoPaginadoClienteHabitacionDto>().ForMember(dest => dest.Habitaciones, opt =>
+                opt.MapFrom(
+                    src => src.Reservas
+                        .Select(r => new DetallesHabitacionDto()
+                            {
+                                Id = r.Habitacion.Id,
+                                Numero = r.Habitacion.Numero,
+                            }
+                        )
+                        .Distinct()
+                        .ToList()
+                )).ReverseMap();
+
+
         }
        
     }

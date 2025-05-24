@@ -6,9 +6,9 @@ namespace API.Application.Dtos.Seguridad.Usuario
     public class HabitacionAmaDeLlavesDto : EntidadBaseDto
     {
         public Guid HabitacionId { get; set; }
-        public Habitacion Habitacion { get; set; } = null!;
+        public string Habitacion { get; set; } = null!;
         public Guid AmaDeLlavesId { get; set; }
-        public AmaDeLlaves AmaDeLlaves { get; set; } = null!;
+        public string AmaDeLlaves { get; set; } = null!;
     }
 }
 

@@ -83,24 +83,41 @@ namespace API.Application.Controllers.IslaAzul
         
         protected Task<(IEnumerable<Cliente>, int)> AplicarFiltrosIncluirPropiedadesClienteHabitacion(FiltrarConfigurarListadoPaginadoClienteHabitacionDto inputDto)
         {
-            //agregando filtros
+            
             List<Expression<Func<Cliente, bool>>> filtros = new();
+            
+            Func<IQueryable<Cliente>, IIncludableQueryable<Cliente, object>> propiedadesIncluidas;
+
             if (inputDto.Fecha.HasValue)
-            {
+            {  
                 filtros.Add(cliente => cliente.Reservas.Any(r => 
-                    r.FechaEntrada <= inputDto.Fecha.Value && 
-                    r.FechaSalida >= inputDto.Fecha.Value &&
+                    r.FechaEntrada.Date <= inputDto.Fecha.Value.Date && 
+                    r.FechaSalida.Date >= inputDto.Fecha.Value.Date &&
                     !r.EstaCancelada)); 
+                
+                propiedadesIncluidas =query => query.Include(c => c.Reservas.Where(r =>
+                            r.FechaEntrada.Date <= inputDto.Fecha.Value.Date &&
+                            r.FechaSalida.Date >= inputDto.Fecha.Value.Date &&
+                            !r.EstaCancelada))
+                        .ThenInclude(r => r.Habitacion);
+                
+            }
+
+            else
+            {
+                filtros.Add(cliente => cliente.Reservas.Any());
+                propiedadesIncluidas = query => query.Include(c => c.Reservas)
+                    .ThenInclude(r => r.Habitacion);
             }
 
            
 
-            IIncludableQueryable<Cliente, object> propiedadesIncluidas(IQueryable<Cliente> query) => query.Include(c => c.Reservas ).ThenInclude(r => r.Habitacion);
-
+         
             return _servicioBase.ObtenerListadoPaginado(inputDto.CantidadIgnorar, inputDto.CantidadMostrar,
                 inputDto.SecuenciaOrdenamiento, propiedadesIncluidas, filtros.ToArray());
         }
-
+        
+      
 
         
     }

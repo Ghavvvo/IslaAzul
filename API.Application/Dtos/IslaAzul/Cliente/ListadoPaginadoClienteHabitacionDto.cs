@@ -8,9 +8,8 @@ namespace API.Application.Dtos.Seguridad.Usuario
     {   
         public required string Nombre { get; set; }
         public required string Apellidos { get; set; }
-        public List<HabitacionDto> Habitaciones { get; set; } = new();
-        public required DateTime FechaInicio { get; set; }
-        public required DateTime FechaFinal { get; set; }
+        public List<DetallesHabitacionDto> Habitaciones { get; set; } = new();
+     
     }
     
 }
