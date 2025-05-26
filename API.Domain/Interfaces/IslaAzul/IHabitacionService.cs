@@ -9,5 +9,6 @@ namespace API.Domain.Interfaces.Seguridad
     public interface IHabitacionService : IBaseService<Habitacion, HabitacionValidator>
     {
         Task<EntityEntry<Habitacion>> ActualizarHabitacionFuerdaDeServicio(Guid habitacionId);
+        Task<List<Habitacion>> ObtenerHabitacionesDisponibles(DateTime fechaInicio, DateTime fechaFin);
     }
 }

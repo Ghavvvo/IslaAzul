@@ -22,11 +22,14 @@ namespace API.Domain.Validators.Seguridad
                 .NotNull().WithMessage("Los apellidos son obligatorios.");
 
             RuleFor(c => c.Ci).NotNull().WithMessage("El CI es obligatorio.").MaximumLength(11)
-                .WithMessage("El CI debe tener como máximo 11 caracteres.");
+                .WithMessage("El CI debe tener como máximo 11 caracteres.")
+                .Matches("^[0-9]+$").WithMessage("El CI solo puede contener números.");;
             
                         
             RuleFor(c => c.Telefono).NotNull().WithMessage("El teléfono es obligatorio.").MaximumLength(25)
-                .WithMessage("El teléfono debe tener como máximo 25 caracteres.");
+                .WithMessage("El teléfono debe tener como máximo 25 caracteres.")
+                .Matches("^[0-9]+$").WithMessage("El teléfono solo puede contener números.");
+           
             
             RuleFor(e => e).MustAsync(async (amaDeLlaves, cancelacion) =>
                     !await _repositorios.Clientes.AnyAsync(e => e.Telefono == amaDeLlaves.Telefono && e.Id != amaDeLlaves.Id))
@@ -37,6 +40,9 @@ namespace API.Domain.Validators.Seguridad
                     !await _repositorios.Clientes.AnyAsync(e => e.Ci == cliente.Ci && e.Id != cliente.Id))
                 .WithMessage("Ya existe un cliente con el mismo CI.");
             
+            RuleFor(c => c).MustAsync(async (cliente, cancelacion) =>
+                    !await _repositorios.Clientes.AnyAsync(e => e.Nombre == cliente.Nombre && e.Apellidos == cliente.Apellidos && e.Id != cliente.Id))
+                .WithMessage("Ya existe un cliente con el mismo nombre y apellidos.");
             
         }
     }

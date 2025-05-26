@@ -23,6 +23,18 @@ namespace API.Application.Controllers.IslaAzul
         {
             
         }
+        [HttpGet("[action]/{id}")]
+        public  async Task<IActionResult> ObtenerHabitacionesDeAmaDeLlaves(Guid id)
+        {
+            _servicioBase.ValidarPermisos("listar, gestionar");
+
+            AmaDeLlaves?  entity = await _servicioBase.ObtenerPorId(id , propiedadesIncluidas: queryable => queryable.Include(a => a.HabitacionesAmasDeLLaves).ThenInclude(a => a.Habitacion)   );
+            
+            ListadoDeHabitacionesDto entityDto = _mapper.Map<ListadoDeHabitacionesDto>(entity);
+
+            return Ok(new ResponseDto { Status = StatusCodes.Status200OK, Result = entityDto });
+        }
+       
         
         
     }

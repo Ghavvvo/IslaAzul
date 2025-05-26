@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Collections;
+using System.Linq.Expressions;
 using API.Data.Entidades.IslaAzul;
 using API.Data.Entidades.Seguridad;
 using API.Data.IUnitOfWorks.Interfaces;
@@ -20,6 +21,7 @@ namespace API.Domain.Services.Seguridad
             httpContext)
         {
         }
+        
         
         public override async Task ValidarAntesCrear(HabitacionAmaDeLLaves entity)
         {   

@@ -66,7 +66,7 @@ namespace API.Application.Controllers.IslaAzul
         }
         
         [HttpGet("[action]")]
-        public virtual async Task<IActionResult> ObtenerListadoPaginadoClienteHabitacion([FromQuery] FiltrarConfigurarListadoPaginadoClienteHabitacionDto filtrarDto)
+        public async Task<IActionResult> ObtenerClientesConHabitacionesDeReserva([FromQuery] FiltrarConfigurarListadoPaginadoClienteHabitacionDto filtrarDto)
         {
             _servicioBase.ValidarPermisos("listar, gestionar");
 
@@ -80,6 +80,8 @@ namespace API.Application.Controllers.IslaAzul
 
             return Ok(new ResponseDto { Status = StatusCodes.Status200OK, Result = listadoPaginadoDto });
         }
+        
+      
         
         protected Task<(IEnumerable<Cliente>, int)> AplicarFiltrosIncluirPropiedadesClienteHabitacion(FiltrarConfigurarListadoPaginadoClienteHabitacionDto inputDto)
         {
@@ -117,7 +119,7 @@ namespace API.Application.Controllers.IslaAzul
                 inputDto.SecuenciaOrdenamiento, propiedadesIncluidas, filtros.ToArray());
         }
         
-      
+       
 
         
     }

@@ -19,6 +19,8 @@ namespace API.Domain.Services.Seguridad
             httpContext)
         {
         }
+        
+        
 
 
     }

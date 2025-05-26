@@ -39,8 +39,22 @@ namespace API.Domain.Services.IslaAzul
            
         }
 
-       
+        public async Task<List<Habitacion>> ObtenerHabitacionesDisponibles(DateTime fechaInicio, DateTime fechaFin)
+        {
+            IQueryable<Habitacion> query = _repositorios.BasicRepository.GetQuery();
+          
+            query = query.Where(r => !r.EstaFueraDeServicio  && !r.Reservas
+                .Any(reserva => reserva.FechaEntrada.Date < fechaFin.Date && reserva.FechaSalida.Date> fechaInicio.Date && !reserva.EstaCancelada && (DateTime.Now.Date <= reserva.FechaEntrada.Date || reserva.EstaElClienteEnHostal)));
+            
+            var list = await query.Select(h => new Habitacion()
+            {
+                Id = h.Id,
+                Numero = h.Numero
+                
+            }).ToListAsync();
 
-        
+            return list;
+
+        }
     }
 }

@@ -9,6 +9,7 @@ namespace API.Application.Mapper.Seguridad
         public HabitacionAmaDeLlavesDtoProfile()
         {
             MapDetallesHabitacionAmaDeLlavesDto();
+            
         }
 
         public void MapDetallesHabitacionAmaDeLlavesDto()
@@ -24,6 +25,10 @@ namespace API.Application.Mapper.Seguridad
 
                 .ReverseMap();
         }
+
+    
+        
+       
     }
 }
 
