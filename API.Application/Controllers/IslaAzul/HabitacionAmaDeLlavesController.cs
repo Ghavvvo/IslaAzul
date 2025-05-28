@@ -24,7 +24,17 @@ namespace API.Application.Controllers.IslaAzul
             
         }
         
-     
+        [NonAction]
+        public override async Task<IActionResult> ObtenerPorId(Guid id)
+        {
+            return await base.ObtenerPorId(id);
+        }
+        
+        [NonAction]
+        public override async Task<IActionResult> ObtenerListadoPaginado([FromQueryAttribute] FiltrarConfigurarListadoPaginadoHabitacionAmaDeLlavesIntputDto filtrarDto)
+        {
+            return await base.ObtenerListadoPaginado( filtrarDto);
+        }
         
 
     }

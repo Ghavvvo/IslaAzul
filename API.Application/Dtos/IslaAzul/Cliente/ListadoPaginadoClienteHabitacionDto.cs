@@ -6,9 +6,15 @@ namespace API.Application.Dtos.Seguridad.Usuario
 {
     public class ListadoPaginadoClienteHabitacionDto 
     {   
-        public required string Nombre { get; set; }
-        public required string Apellidos { get; set; }
-        public List<DetallesHabitacionDto> Habitaciones { get; set; } = new();
+        public required string Cliente { get; set; }
+      
+        public HabitacionesOcupadasDto  Habitacion { get; set; } = new();
+        
+        public DateTime FechaEntrada { get; set; }
+        
+        public DateTime FechaSalida { get; set; }
+        
+        
      
     }
     

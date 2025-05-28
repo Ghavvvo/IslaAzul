@@ -11,7 +11,7 @@ namespace API.Application.Dtos.Seguridad.Usuario
 
         public string Telefono { get; set; } = string.Empty;
         
-        public List<HabitacionAmaDeLLaves> HabitacionesAmasDeLLaves { get; set; } = new();
+        
        
     }
 }

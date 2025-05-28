@@ -23,10 +23,11 @@ namespace API.Domain.Services.IslaAzul
             
             var habitacionExistente = await ObtenerPorId(habitacionId);
 
-            if (habitacionExistente == null)
+            if (await _repositorios.Reservas.AnyAsync(r => r.HabitacionId == habitacionId))
+            {
                 throw new CustomException
-                    { Status = StatusCodes.Status400BadRequest, Message = "La habitacion seleccionada no existe" };
-            
+                    { Status = StatusCodes.Status400BadRequest, Message = "No se puede poner fuera de servicio porque la habitacion tiene reservas asociadas" };
+            }
             if (habitacionExistente.EstaFueraDeServicio)
                 throw new CustomException
                     { Status = StatusCodes.Status400BadRequest, Message = "La habitacion seleccionada ya esta fuera de servicio" };
@@ -44,7 +45,7 @@ namespace API.Domain.Services.IslaAzul
             IQueryable<Habitacion> query = _repositorios.BasicRepository.GetQuery();
           
             query = query.Where(r => !r.EstaFueraDeServicio  && !r.Reservas
-                .Any(reserva => reserva.FechaEntrada.Date < fechaFin.Date && reserva.FechaSalida.Date> fechaInicio.Date && !reserva.EstaCancelada && (DateTime.Now.Date <= reserva.FechaEntrada.Date || reserva.EstaElClienteEnHostal)));
+                .Any(reserva => reserva.FechaEntrada.Date <= fechaFin.Date && reserva.FechaSalida.Date >= fechaInicio.Date && !reserva.EstaCancelada && (DateTime.Now.Date <= reserva.FechaEntrada.Date || reserva.EstaElClienteEnHostal)));
             
             var list = await query.Select(h => new Habitacion()
             {

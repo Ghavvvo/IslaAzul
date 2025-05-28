@@ -23,6 +23,9 @@ namespace API.Application.Controllers.IslaAzul
         {
             
         }
+
+      
+
         [HttpGet("[action]/{id}")]
         public  async Task<IActionResult> ObtenerHabitacionesDeAmaDeLlaves(Guid id)
         {

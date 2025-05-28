@@ -38,15 +38,16 @@ namespace API.Application.Controllers.IslaAzul
 
             EntityEntry<Habitacion> result =
                 await ((IHabitacionService)_servicioBase).ActualizarHabitacionFuerdaDeServicio(id);
-            ;
+            
 
-            await _servicioBase.GuardarTraza(usuario,
-                $"Actualizado elemento con id = {result.Entity.Id} en la tabla {typeof(Habitacion).Name}s",
-                typeof(Habitacion).Name);
-            await _servicioBase.SalvarCambios();
+         
 
             EstFueraDeServicioHabitacionInputDto entityDto =
                 _mapper.Map<EstFueraDeServicioHabitacionInputDto>(result.Entity);
+            
+            
+            await _servicioBase.GuardarTraza(usuario, $"Poniendo fuera de servicio la habitacion con id = {result.Entity.Id} en la tabla {typeof(Habitacion).Name}s", typeof(Habitacion).Name);
+            await _servicioBase.SalvarCambios();
 
             return Ok(new ResponseDto { Status = StatusCodes.Status200OK, Result = entityDto });
         }
@@ -61,6 +62,25 @@ namespace API.Application.Controllers.IslaAzul
             var habitacionesDto = _mapper.Map<List<DetallesHabitacionDto>>(habitacionesDisponibles);
 
             return Ok(new ResponseDto { Status = StatusCodes.Status200OK, Result = habitacionesDto });
+        }
+        
+        
+        [NonAction]
+        public override async Task<IActionResult> Crear([FromBody] CrearHabitacionInputDto crearDto)
+        {
+            return await base.Crear(crearDto);
+        }
+        
+        [NonAction]
+        public override async Task<IActionResult> Eliminar([FromBody] Guid id)
+        {
+            return await base.Eliminar(id);
+        }
+        
+        [NonAction]
+        public override async Task<IActionResult> Actualizar(Guid id, ActualizarHabitacionInputDto actualizarDto)
+        {
+            return await base.Actualizar(id , actualizarDto);
         }
     }
 }

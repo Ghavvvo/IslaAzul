@@ -66,8 +66,17 @@ namespace API.Application.Controllers.IslaAzul
         }
         
         [HttpGet("[action]")]
-        public async Task<IActionResult> ObtenerClientesConHabitacionesDeReserva([FromQuery] FiltrarConfigurarListadoPaginadoClienteHabitacionDto filtrarDto)
-        {
+        public async Task<IActionResult> ObtenerClientesConHabitacionesDeReserva([FromQuery] FiltrarConfigurarListadoPaginadoClienteHabitacionDto? filtrarDto)
+        {    
+            if (filtrarDto?.Fecha == null)
+            {
+                return BadRequest(new ResponseDto 
+                { 
+                    Status = StatusCodes.Status400BadRequest, 
+                    ErrorMessage = "El filtro de fecha es obligatorio." 
+                });
+            }
+            
             _servicioBase.ValidarPermisos("listar, gestionar");
 
             (IEnumerable<Cliente> listado, int cantidad) = await AplicarFiltrosIncluirPropiedadesClienteHabitacion(filtrarDto);
@@ -83,15 +92,14 @@ namespace API.Application.Controllers.IslaAzul
         
       
         
-        protected Task<(IEnumerable<Cliente>, int)> AplicarFiltrosIncluirPropiedadesClienteHabitacion(FiltrarConfigurarListadoPaginadoClienteHabitacionDto inputDto)
+        protected Task<(IEnumerable<Cliente>, int)> AplicarFiltrosIncluirPropiedadesClienteHabitacion(FiltrarConfigurarListadoPaginadoClienteHabitacionDto? inputDto)
         {
             
             List<Expression<Func<Cliente, bool>>> filtros = new();
             
             Func<IQueryable<Cliente>, IIncludableQueryable<Cliente, object>> propiedadesIncluidas;
 
-            if (inputDto.Fecha.HasValue)
-            {  
+             
                 filtros.Add(cliente => cliente.Reservas.Any(r => 
                     r.FechaEntrada.Date <= inputDto.Fecha.Value.Date && 
                     r.FechaSalida.Date >= inputDto.Fecha.Value.Date &&
@@ -103,16 +111,7 @@ namespace API.Application.Controllers.IslaAzul
                             !r.EstaCancelada))
                         .ThenInclude(r => r.Habitacion);
                 
-            }
-
-            else
-            {
-                filtros.Add(cliente => cliente.Reservas.Any());
-                propiedadesIncluidas = query => query.Include(c => c.Reservas)
-                    .ThenInclude(r => r.Habitacion);
-            }
-
-           
+                
 
          
             return _servicioBase.ObtenerListadoPaginado(inputDto.CantidadIgnorar, inputDto.CantidadMostrar,

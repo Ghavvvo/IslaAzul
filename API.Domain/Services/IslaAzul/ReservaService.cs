@@ -67,17 +67,17 @@ namespace API.Domain.Services.Seguridad
 
         public  async Task ValidarDisponibilidad(Reserva reserva)
         {
-            bool estaOcupada = await _repositorios.Reservas.AnyAsync(e =>
-                                   e.HabitacionId == reserva.HabitacionId && 
-                                   reserva.FechaEntrada < e.FechaSalida && reserva.FechaSalida > e.FechaEntrada
-                               && !reserva.EstaCancelada && (DateTime.Now.Date <= reserva.FechaEntrada.Date || reserva.EstaElClienteEnHostal));
-                
-            if (estaOcupada)
+            bool noDisponible = await _repositorios.Reservas.AnyAsync(e =>
+                                  ( e.HabitacionId == reserva.HabitacionId || e.ClienteId == reserva.ClienteId ) && 
+                                                                          reserva.FechaEntrada <= e.FechaSalida && reserva.FechaSalida >= e.FechaEntrada
+                                                                          && !reserva.EstaCancelada && (DateTime.Now.Date <= reserva.FechaEntrada.Date || reserva.EstaElClienteEnHostal));
+            
+            if (noDisponible)
             {
                 throw new CustomException
                 {
                     Status = StatusCodes.Status400BadRequest,
-                    Message = "La habitación seleccionada ya está ocupada en el rango de fechas especificado."
+                    Message = "La habitación seleccionada ya está ocupada en el rango de fechas especificado o el cliente ya tiene una reservacion en este periodo."
                 };
             }
 
@@ -210,13 +210,7 @@ namespace API.Domain.Services.Seguridad
             decimal importe = cantidadDeDias * 10;
 
             var cliente = await _repositorios.Clientes.FirstAsync(c => c.Id == reserva.ClienteId);
-            if (cliente == null)
-            {
-                throw new CustomException
-                {
-                    Status = StatusCodes.Status400BadRequest, Message = "El cliente no esta registrado en el sistema"
-                };
-            }
+           
             if (cliente.EsVip)
             {
                 importe -= importe * (decimal)0.10;
